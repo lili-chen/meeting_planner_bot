@@ -1,0 +1,22 @@
+{
+  "name": "confer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/storage": "^1.7.0",
+    "cookie-session": "^2.0.0-beta.3",
+    "dialogflow": "^0.6.0",
+    "ejs": "^2.6.1",
+    "express": "^4.16.3",
+    "mongoose": "^5.2.7",
+    "passport": "^0.4.0",
+    "passport-google-oauth20": "^1.0.0",
+    "socket.io": "^2.1.1"
+  }
+}
