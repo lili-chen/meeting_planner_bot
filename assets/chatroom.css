@@ -1,18 +1,28 @@
 h4 {
-    padding-top: 5rem;
+    padding-top: 3rem;
     text-align: right;
     font-weight: lighter;
 }
 h1, h5 {
     font-weight: lighter;
 }
+h3 {
+    padding-top: 8rem;
+    padding-left: 2rem;
+    font-weight: lighter;
+}
+#updatedTable {
+    padding-left: 2rem;
+    height: 600px;
+    overflow: auto;
+}
 #logout {
     float: right;
 }
 #chat-window {
     overflow: auto;
+    height: 550px;
 }
-
 td {
     border: 1px solid black;
 }
@@ -21,7 +31,6 @@ th {
     font-size: 1.5rem;
     font-weight: lighter;
 }
-
 button {
     height: 100%;
     width: 100%;

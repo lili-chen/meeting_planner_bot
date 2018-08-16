@@ -12,20 +12,29 @@
         <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
     </head>
     <body>
+        <!--
         <div class="container">
+        -->
+        <div class="row" style="width: 95%;">
+        <div class="col-lg-4">
+            <h3>Up-to-Date Availabilities</h3>
+            <div id="updatedTable"></div>
+        </div>
+        <div class="col-lg-8">
         <h4><%= username %></h4>
         <a id="logout" class="btn btn-outline-secondary" href="/auth/logout">Logout</a>
         <div id="group-chat">
             <h1>Chat</h1>
             <h5>Start your message with #bot to include the bot in your conversation!</h5>
             <a class="btn btn-primary">Tips for Bot Interaction</a>
+            <a class="btn btn-primary">See Who's Available When</a>
             <div id="chat-window">
                 <div id="output"></div>
                 <div id="feedback"></div>
             </div>
             <input id="handle" style="display: none;" type="text" placeholder="Handle" value="<%= id %>" />
 
-            <div class="input-group mb-3" style="margin-top: 5rem;">
+            <div class="input-group mb-3" style="margin-top: 2rem;">
                 <input id="message" type="text" class="form-control" placeholder="Message">
                 <div class="input-group-append">
                     <button id="send" class="btn btn-raised btn-primary">Send</button>
@@ -33,6 +42,10 @@
             </div>
         </div>
         </div>
+        </div>
+        <!--
+        </div>
+        -->
 
     </body>
     <script src="../assets/chat.js"></script>

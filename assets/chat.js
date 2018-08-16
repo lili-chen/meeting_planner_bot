@@ -39,12 +39,13 @@ socket.on('chat', function(data){
     if (data.table.length != 0) {
         console.log(data.table);
         //console.log('<table>' + getStr(data.table) + '</table>');
-        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> I updated this chart with your availability </p></div>';
-        output.innerHTML += '<table>' + getStr(data.table) + '</table>';
-        output.innerHTML += '<div id="t1" style="display: none;"><p>Week 1</p><table>' + getStr2(data.week1) + '</table></div>';
-        output.innerHTML += '<div id="t2" style="display: none;"><p>Week 2</p><table>' + getStr2(data.week2) + '</table></div>';
-        output.innerHTML += '<div id="t3" style="display: none;"><p>Week 3</p><table>' + getStr2(data.week3) + '</table></div>';
-        output.innerHTML += '<div id="t4" style="display: none;"><p>Week 4</p><table>' + getStr2(data.week4) + '</table></div>';
+        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> I updated this table with your availability. Check the updated table for more details. </p></div>';
+        output.innerHTML += '<table>' + getStr(data.table, false) + '</table>';
+        updatedTable.innerHTML = '<table>' + getStr(data.table, true) + '</table>';
+        updatedTable.innerHTML += '<div id="t1" style="display: none;"><table>' + getStr2(data.week1) + '</table></div>';
+        updatedTable.innerHTML += '<div id="t2" style="display: none;"><table>' + getStr2(data.week2) + '</table></div>';
+        updatedTable.innerHTML += '<div id="t3" style="display: none;"><table>' + getStr2(data.week3) + '</table></div>';
+        updatedTable.innerHTML += '<div id="t4" style="display: none;"><table>' + getStr2(data.week4) + '</table></div>';
         listenForWeekButtonClicks();
     }
 });
@@ -76,12 +77,18 @@ function listenForWeekButtonClicks() {
     });
 }
 
-function getStr(table) {
+function getStr(table, weekButtons) {
     //var str = '<tr><th>S</th><th>M</th><th>T</th><th>W</th><th>R</th><th>F</th><th>S</th></tr><tr>';
-    var str = '<tr><th></th><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>';
+    if (weekButtons) {
+        var str = '<tr><th></th><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>';
+    } else {
+        var str = '<tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>';
+    }
     for (var i = 0; i < table.length; i++) {
-        if (i % 7 == 0) {
+        if (weekButtons && (i % 7 == 0)) {
             str += '</tr><tr><td><button id="w' + (i / 7 + 1) +'" class="btn btn-primary btn-sm rounded-0">Week ' + (i / 7 + 1) + '</td></button>';
+        } else if (i % 7 == 0) {
+            str += '</tr><tr>';
         }
         str += '<td><h6 style="text-align:right; font-weight: lighter; padding: 0.5rem 0.5rem 1rem 2rem;">' + ((new Date(table[i].date)).getDate()) + '</h6>';
         if (table[i].available.length == 0) {
