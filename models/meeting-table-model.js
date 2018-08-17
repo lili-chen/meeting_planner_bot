@@ -12,7 +12,8 @@ const meetingTableSchema = new Schema({
     week2: [[[String]]],
     week3: [[[String]]],
     week4: [[[String]]],
-    monthView: [dateSchema]
+    monthView: [dateSchema],
+    users: [String]
 });
 
 const MeetingTable = mongoose.model('meetingtable', meetingTableSchema);

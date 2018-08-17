@@ -1,6 +1,8 @@
 // Make connection
 var socket = io.connect('http://localhost:3000');
 
+var colors = ['FFFFF', 'CCE5FF', '99CCFF', '66B2FF', '3399FF'];
+
 // Query DOM
 var message = document.getElementById('message'),
       handle = document.getElementById('handle'),
@@ -40,8 +42,8 @@ socket.on('chat', function(data){
         console.log(data.table);
         //console.log('<table>' + getStr(data.table) + '</table>');
         output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> I updated this table with your availability. Check the updated table for more details. </p></div>';
-        output.innerHTML += '<table>' + getStr(data.table, false) + '</table>';
-        updatedTable.innerHTML = '<table>' + getStr(data.table, true) + '</table>';
+        output.innerHTML += '<table>' + getStr(data.table, false, data.numUsers) + '</table>';
+        updatedTable.innerHTML = '<table>' + getStr(data.table, true, data.numUsers) + '</table>';
         updatedTable.innerHTML += '<div id="t1" style="display: none;"><table>' + getStr2(data.week1) + '</table></div>';
         updatedTable.innerHTML += '<div id="t2" style="display: none;"><table>' + getStr2(data.week2) + '</table></div>';
         updatedTable.innerHTML += '<div id="t3" style="display: none;"><table>' + getStr2(data.week3) + '</table></div>';
@@ -77,7 +79,7 @@ function listenForWeekButtonClicks() {
     });
 }
 
-function getStr(table, weekButtons) {
+function getStr(table, weekButtons, numUsers) {
     //var str = '<tr><th>S</th><th>M</th><th>T</th><th>W</th><th>R</th><th>F</th><th>S</th></tr><tr>';
     if (weekButtons) {
         var str = '<tr><th></th><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>';
@@ -91,12 +93,15 @@ function getStr(table, weekButtons) {
             str += '</tr><tr>';
         }
         str += '<td><h6 style="text-align:right; font-weight: lighter; padding: 0.5rem 0.5rem 1rem 2rem;">' + ((new Date(table[i].date)).getDate()) + '</h6>';
-        if (table[i].available.length == 0) {
-            str += '<button type="button" class="btn btn-primary rounded-0"></button>';
-        }
+        var ctr = 0;
         for (var j = 0; j < table[i].available.length; j++) {
-            str += '<button type="button" class="btn btn-raised btn-info rounded-0"></button>';
+            ctr += 1;
         }
+        if (ctr > 0) {
+            ctr = Math.floor(ctr / numUsers * 4);
+            console.log(ctr);
+        }
+        str += '<button style="background-color: #' + colors[ctr] + '!important;" type="button" class="btn btn-primary rounded-0"></button>';
         str += '</td>';
     }
     return str + '</tr>';
@@ -111,9 +116,11 @@ function getStr2(week) {
             if (day[i].length == 0) {
                 str += '<button type="button" class="btn btn-primary rounded-0"></button>';
             }
+            var ctr = 0;
             for (var k = 0; k < day[i].length; k++) {
-                str += '<button type="button" class="btn btn-raised btn-info rounded-0"></button>';
+                ctr += 1;
             }
+            str += '<button style="background-color: #' + colors[ctr] + '!important;" type="button" class="btn btn-primary rounded-0"></button>';
             str += '</td><td>';
         }
         str += '</td>';

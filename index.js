@@ -8,6 +8,9 @@ var passport = require('passport');
 var keys = require('./config/keys');
 var botSetup = require('./config/bot-setup');
 var MeetingTable = require('./models/meeting-table-model');
+var User = require('./models/user-model');
+
+//var passportSocketIo = require("passport.socketio");
 
 var app = express();
 
@@ -94,6 +97,15 @@ io.on('connection', (socket) => {
     socket.on('chat', function(data){
         //io.sockets.emit('chat', data);
         var message = data.message;
+        /*
+        User.findById(data.handle).then((record) => {
+            record.messages.push({
+                content: data.message,
+                timeSent: (new Date())
+            });
+            record.save();
+        });
+        */
         if (message.substring(0, 5) == '#bot ') {
             saveQueryResults(message.substring(5), function() {
                 updateMeetingTable(data);
@@ -130,10 +142,23 @@ function changeTableValues(monthView, week1, week2, week3, week4, data) {
     }
 }
 
+function contains(users, handle) {
+    for (var i = 0; i < users.length; i++) {
+        if (users[i] == handle) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function updateMeetingTable(data) {
     MeetingTable.findOne({tableNum: 1}).then((currentTable) => {
         if (currentTable) {
             console.log('found table');
+            if (!currentTable.users || !contains(currentTable.users, data.handle)) {
+                console.log('adding handle to users');
+                currentTable.users.push(data.handle);
+            }
             changeTableValues(currentTable.monthView, currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4, data);
             currentTable.save().then((currentTable) => {
                 io.sockets.emit('chat', {
@@ -143,7 +168,8 @@ function updateMeetingTable(data) {
                     week1: currentTable.week1,
                     week2: currentTable.week2,
                     week3: currentTable.week3,
-                    week4: currentTable.week4
+                    week4: currentTable.week4,
+                    numUsers: currentTable.users.length
                 });
             });
         } else {
@@ -158,13 +184,16 @@ function updateMeetingTable(data) {
             initWeek(week3);
             initWeek(week4);
             changeTableValues(table, week1, week2, week3, week4, data);
+            var users = [];
+            users.push(data.handle);
             new MeetingTable({
                 tableNum: 1,
                 week1: week1,
                 week2: week2,
                 week3: week3,
                 week4: week4,
-                monthView: table
+                monthView: table,
+                users: users
             }).save().then((newMT) => {
                 console.log('new MT created');
                 io.sockets.emit('chat', {
@@ -174,7 +203,8 @@ function updateMeetingTable(data) {
                     week1: newMT.week1,
                     week2: newMT.week2,
                     week3: newMT.week3,
-                    week4: newMT.week4
+                    week4: newMT.week4,
+                    numUsers: newMT.users.length
                 });
             });
         }
