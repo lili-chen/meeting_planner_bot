@@ -1,5 +1,5 @@
 var express = require('express');
-var cookieSession = require('cookie-session');
+//var cookieSession = require('cookie-session');
 var socket = require('socket.io');
 var authRoutes = require('./routes/auth-routes');
 var passportSetup = require('./config/passport-setup');
@@ -10,6 +10,14 @@ var botSetup = require('./config/bot-setup');
 var MeetingTable = require('./models/meeting-table-model');
 var User = require('./models/user-model');
 
+var session = require("express-session")({
+    secret: "my-secret",
+    resave: true,
+    saveUninitialized: true
+});
+var sharedsession = require("express-socket.io-session");
+
+//var RedisStore = require('connect-redis')(session);
 //var passportSocketIo = require("passport.socketio");
 
 var app = express();
@@ -21,10 +29,14 @@ app.set('view engine', 'ejs');
 
 app.use('/assets', express.static('assets'));
 
+/*
 app.use(cookieSession({
     maxAge: 24 * 60 * 60 * 1000,
     keys: [keys.session.cookieKey]
 }));
+*/
+
+app.use(session);
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -75,9 +87,16 @@ function saveQueryResults(query, callback) {
 }
 
 app.get('/chatroom', (req, res) => {
+    //console.log(req);
     if (req.isAuthenticated()) {
         console.log(req.user);
-        res.render('chatroom', {username: req.user.username, id: req.user.id});
+        MeetingTable.findOne({tableNum: 1}).then((record) => {
+            if (record) {
+                res.render('chatroom', {username: req.user.username, id: req.user.id, messages: record.messages});
+            } else {
+                res.render('chatroom', {username: req.user.username, id: req.user.id, messages: []});
+            }
+        });
     } else {
         res.redirect('/');
     }
@@ -89,6 +108,8 @@ var server = app.listen(3000, function() {
 
 var io = socket(server);
 
+io.use(sharedsession(session));
+
 io.on('connection', (socket) => {
 
     console.log('made socket connection', socket.id);
@@ -96,16 +117,50 @@ io.on('connection', (socket) => {
     // Handle chat event
     socket.on('chat', function(data){
         //io.sockets.emit('chat', data);
+        //console.log(socket.handshake.session.passport.user);
         var message = data.message;
-        /*
-        User.findById(data.handle).then((record) => {
-            record.messages.push({
-                content: data.message,
-                timeSent: (new Date())
-            });
-            record.save();
+        //var thisUser = socket.handshake.session.passport.user;
+        MeetingTable.findOne({tableNum: 1}).then((record) => {
+            if (!record) {
+                var table = [];
+                var week1 = [];
+                var week2 = [];
+                var week3 = [];
+                var week4 = [];
+                initTable(table);
+                initWeek(week1);
+                initWeek(week2);
+                initWeek(week3);
+                initWeek(week4);
+                var users = [];
+                users.push(data.handle);
+                var messages = [];
+                messages.push({
+                    user: data.handle,
+                    content: message,
+                    timeSent: (new Date())
+                });
+                new MeetingTable({
+                    tableNum: 1,
+                    week1: week1,
+                    week2: week2,
+                    week3: week3,
+                    week4: week4,
+                    monthView: table,
+                    users: users,
+                    messages: messages
+                }).save().then((newMT) => {
+                    console.log('new MT created');
+                });
+            } else {
+                record.messages.push({
+                    user: data.handle,
+                    content: message,
+                    timeSent: (new Date())
+                });
+                record.save();
+            }
         });
-        */
         if (message.substring(0, 5) == '#bot ') {
             saveQueryResults(message.substring(5), function() {
                 updateMeetingTable(data);
@@ -173,6 +228,7 @@ function updateMeetingTable(data) {
                 });
             });
         } else {
+            /*
             var table = [];
             var week1 = [];
             var week2 = [];
@@ -193,7 +249,8 @@ function updateMeetingTable(data) {
                 week3: week3,
                 week4: week4,
                 monthView: table,
-                users: users
+                users: users,
+                messages: []
             }).save().then((newMT) => {
                 console.log('new MT created');
                 io.sockets.emit('chat', {
@@ -207,6 +264,7 @@ function updateMeetingTable(data) {
                     numUsers: newMT.users.length
                 });
             });
+            */
         }
     });
 }

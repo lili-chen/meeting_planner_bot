@@ -6,6 +6,12 @@ const dateSchema = new Schema({
     available: [String]
 });
 
+const messageSchema = new Schema({
+    content: String,
+    timeSent: String,
+    user: String
+});
+
 const meetingTableSchema = new Schema({
     tableNum: Number,
     week1: [[[String]]],
@@ -13,7 +19,8 @@ const meetingTableSchema = new Schema({
     week3: [[[String]]],
     week4: [[[String]]],
     monthView: [dateSchema],
-    users: [String]
+    users: [String],
+    messages: [messageSchema]
 });
 
 const MeetingTable = mongoose.model('meetingtable', meetingTableSchema);

@@ -29,6 +29,13 @@
             <a class="btn btn-primary">Tips for Bot Interaction</a>
             <a class="btn btn-primary">See Who's Available When</a>
             <div id="chat-window">
+                <% for (var i = 0; i < messages.length; i++) { %>
+                    <% if (messages[i].user == id) { %>
+                        <div class="alert alert-primary" role="alert" style="float: right; width: 50rem; margin-top: 20px;"><p style="text-align: right;"><strong><%= messages[i].user %>: </strong><%= messages[i].content %></p></div>
+                    <% } else { %>
+                        <div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong><%= messages[i].user %>: </strong><%= messages[i].content %></p></div>
+                    <% } %>
+                <% } %>
                 <div id="output"></div>
                 <div id="feedback"></div>
             </div>
