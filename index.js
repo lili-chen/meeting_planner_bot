@@ -208,65 +208,40 @@ function contains(users, handle) {
 
 function updateMeetingTable(data) {
     MeetingTable.findOne({tableNum: 1}).then((currentTable) => {
-        if (currentTable) {
-            console.log('found table');
-            if (!currentTable.users || !contains(currentTable.users, data.handle)) {
-                console.log('adding handle to users');
-                currentTable.users.push(data.handle);
-            }
-            changeTableValues(currentTable.monthView, currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4, data);
-            currentTable.save().then((currentTable) => {
-                io.sockets.emit('chat', {
-                    message: data.message,
-                    handle: data.handle,
-                    table: currentTable.monthView,
-                    week1: currentTable.week1,
-                    week2: currentTable.week2,
-                    week3: currentTable.week3,
-                    week4: currentTable.week4,
-                    numUsers: currentTable.users.length
-                });
-            });
-        } else {
-            /*
-            var table = [];
-            var week1 = [];
-            var week2 = [];
-            var week3 = [];
-            var week4 = [];
-            initTable(table);
-            initWeek(week1);
-            initWeek(week2);
-            initWeek(week3);
-            initWeek(week4);
-            changeTableValues(table, week1, week2, week3, week4, data);
-            var users = [];
-            users.push(data.handle);
-            new MeetingTable({
-                tableNum: 1,
-                week1: week1,
-                week2: week2,
-                week3: week3,
-                week4: week4,
-                monthView: table,
-                users: users,
-                messages: []
-            }).save().then((newMT) => {
-                console.log('new MT created');
-                io.sockets.emit('chat', {
-                    message: data.message,
-                    handle: data.handle,
-                    table: newMT.monthView,
-                    week1: newMT.week1,
-                    week2: newMT.week2,
-                    week3: newMT.week3,
-                    week4: newMT.week4,
-                    numUsers: newMT.users.length
-                });
-            });
-            */
+        console.log('found table');
+        if (!currentTable.users || !contains(currentTable.users, data.handle)) {
+            console.log('adding handle to users');
+            currentTable.users.push(data.handle);
         }
+        changeTableValues(currentTable.monthView, currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4, data);
+        var dateToMeet = getBestDay(currentTable.monthView);
+        console.log(dateToMeet);
+        console.log(currentTable.monthView);
+        io.sockets.emit('chat', {
+            message: data.message,
+            handle: data.handle,
+            table: currentTable.monthView,
+            week1: currentTable.week1,
+            week2: currentTable.week2,
+            week3: currentTable.week3,
+            week4: currentTable.week4,
+            numUsers: currentTable.users.length,
+            dateToMeet: dateToMeet
+        });
+        currentTable.save();
     });
+}
+
+function getBestTime(table) {
+    var max = table[0].available.length;
+    var date = table[0].date;
+    for (var i = 0; i < table.length; i++) {
+        if (table[i].available.length > max) {
+            max = table[i].available.length;
+            date = table[i].date;
+        }
+    }
+    return date;
 }
 
 function getWeek(i, w1, w2, w3, w4) {

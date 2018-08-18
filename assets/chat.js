@@ -41,8 +41,8 @@ socket.on('chat', function(data){
     if (data.table.length != 0) {
         console.log(data.table);
         //console.log('<table>' + getStr(data.table) + '</table>');
-        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> I updated this table with your availability. Check the updated table for more details. </p></div>';
-        output.innerHTML += '<table>' + getStr(data.table, false, data.numUsers) + '</table>';
+        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The earliest day when most people are free is: ' + data.dateToMeet + '</p></div>';
+        //output.innerHTML += '<table>' + getStr(data.table, false, data.numUsers) + '</table>';
         updatedTable.innerHTML = '<table>' + getStr(data.table, true, data.numUsers) + '</table>';
         updatedTable.innerHTML += '<div id="t1" style="display: none;"><table>' + getStr2(data.week1) + '</table></div>';
         updatedTable.innerHTML += '<div id="t2" style="display: none;"><table>' + getStr2(data.week2) + '</table></div>';
