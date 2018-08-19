@@ -41,7 +41,8 @@ socket.on('chat', function(data){
     if (data.table.length != 0) {
         console.log(data.table);
         //console.log('<table>' + getStr(data.table) + '</table>');
-        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The best times to meet are: ' + displayBestTimes(data) + '</p></div>';
+        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot: </strong>' + data.botResponse + displayBestTimes(data) + '</p></div>';
+        //output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The best times to meet are: ' + displayBestTimes(data) + '</p></div>';
         //output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The earliest day when most people are free is: ' + data.dateToMeet + '</p></div>';
         //output.innerHTML += '<table>' + getStr(data.table, false, data.numUsers) + '</table>';
         updatedTable.innerHTML = '<table>' + getStr(data.table, true, data.numUsers) + '</table>';
@@ -50,6 +51,8 @@ socket.on('chat', function(data){
         updatedTable.innerHTML += '<div id="t3" style="display: none;"><table>' + getStr2(data.week3) + '</table></div>';
         updatedTable.innerHTML += '<div id="t4" style="display: none;"><table>' + getStr2(data.week4) + '</table></div>';
         listenForWeekButtonClicks();
+    } else if (data.botResponse) {
+        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot: </strong>' + data.botResponse + '</p></div>';
     }
 });
 

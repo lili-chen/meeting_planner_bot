@@ -24,6 +24,7 @@ var app = express();
 
 var dates = [];
 var timePeriods = [];
+var botResponse = '';
 
 app.set('view engine', 'ejs');
 
@@ -51,7 +52,7 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
-function saveQueryResults(query, callback) {
+function saveQueryResults(query, data, callback) {
     var sessionClient = botSetup.sessionClient;
     const request = {
       session: botSetup.sessionPath,
@@ -69,14 +70,26 @@ function saveQueryResults(query, callback) {
         const result = responses[0].queryResult;
         //console.log(result.parameters.fields.date.listValue.values);
         //console.log(result.parameters.fields['time-period'].listValue.values);
-        //console.log(`  Query: ${result.queryText}`);
-        //console.log(`  Response: ${result.fulfillmentText}`);
+        console.log(`  Query: ${result.queryText}`);
+        console.log(`  Response: ${result.fulfillmentText}`);
         if (result.intent) {
-          //console.log(`  Intent: ${result.intent.displayName}`);
-          dates = result.parameters.fields.date.listValue.values;
-          timePeriods = result.parameters.fields['time-period'].listValue.values;
-          //console.log(timePeriods);
-          callback();
+          console.log(`  Intent: ${result.intent.displayName}`);
+          if (result.intent.displayName == 'availability (time periods)') {
+              dates = result.parameters.fields.date.listValue.values;
+              timePeriods = result.parameters.fields['time-period'].listValue.values;
+              botResponse = result.fulfillmentText;
+              callback();
+          } else {
+              botResponse = result.fulfillmentText;
+              console.log(botResponse);
+              io.sockets.emit('chat', {
+                  message: data.message,
+                  handle: data.handle,
+                  table: [],
+                  botResponse: botResponse
+              });
+          }
+          //console.log(result.fulfillmentText);
         } else {
           //console.log(`  No intent matched.`);
         }
@@ -162,7 +175,7 @@ io.on('connection', (socket) => {
             }
         });
         if (message.substring(0, 5) == '#bot ') {
-            saveQueryResults(message.substring(5), function() {
+            saveQueryResults(message.substring(5), data, function() {
                 updateMeetingTable(data);
             });
         } else {
@@ -227,7 +240,8 @@ function updateMeetingTable(data) {
             week3: currentTable.week3,
             week4: currentTable.week4,
             numUsers: currentTable.users.length,
-            datesTimes: datesTimes
+            datesTimes: datesTimes,
+            botResponse: botResponse
         });
         currentTable.save();
     });
@@ -247,7 +261,7 @@ function getDatesTimes(bestTimes) {
             hour: bestTimes[i].indexInDay
         });
     }
-    console.log(result);
+    //console.log(result);
     return result;
 }
 
