@@ -214,9 +214,10 @@ function updateMeetingTable(data) {
             currentTable.users.push(data.handle);
         }
         changeTableValues(currentTable.monthView, currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4, data);
-        var dateToMeet = getBestDay(currentTable.monthView);
-        console.log(dateToMeet);
-        console.log(currentTable.monthView);
+        var bestTimes = getBestTimes(currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4);
+        //console.log(getDateFromIndices(bestTimes[0].weekNum, bestTimes[0].indexInWeek));
+        var datesTimes = getDatesTimes(bestTimes);
+        //console.log(currentTable.monthView);
         io.sockets.emit('chat', {
             message: data.message,
             handle: data.handle,
@@ -226,22 +227,80 @@ function updateMeetingTable(data) {
             week3: currentTable.week3,
             week4: currentTable.week4,
             numUsers: currentTable.users.length,
-            dateToMeet: dateToMeet
+            datesTimes: datesTimes
         });
         currentTable.save();
     });
 }
 
-function getBestTime(table) {
-    var max = table[0].available.length;
-    var date = table[0].date;
-    for (var i = 0; i < table.length; i++) {
-        if (table[i].available.length > max) {
-            max = table[i].available.length;
-            date = table[i].date;
+function getDatesTimes(bestTimes) {
+    var result = [];
+    for (var i = 0; i < bestTimes.length; i++) {
+        var date = getDateFromIndices(bestTimes[i].weekNum, bestTimes[i].indexInWeek);
+        var day = date.getDay();
+        var month = date.getMonth();
+        var date = date.getDate();
+        result.push({
+            day: day,
+            month: month,
+            date: date,
+            hour: bestTimes[i].indexInDay
+        });
+    }
+    console.log(result);
+    return result;
+}
+
+function getDateFromIndices(weekNum, indexInWeek) {
+    var sunDate = getSunDate();
+    var currDate = new Date();
+    currDate.setDate(sunDate.getDate() + (weekNum * 7 + indexInWeek));
+    return currDate;
+}
+
+function getSunDate() {
+    var today = new Date();
+    var sunDate = new Date();
+    var ctr = 0;
+    while (sunDate.getDay() != 0) {
+        var sunDate = new Date();
+        sunDate.setDate(today.getDate() - ctr);
+        ctr += 1;
+    }
+    return sunDate;
+}
+
+function getBestTimes(week1, week2, week3, week4) {
+    var weeks = [week1, week2, week3, week4];
+    var max = weeks[0][0][0].length;
+    var weekNum = 0;
+    var indexInWeek = 0;
+    var indexInDay = 0;
+    for (var k = 0; k < weeks.length; k++) {
+        for (var i = 0; i < weeks[k].length; i++) {
+            for (var j = 0; j < weeks[k][i].length; j++) {
+                if (weeks[k][i][j].length > max) {
+                    max = weeks[k][i][j].length;
+                }
+            }
         }
     }
-    return date;
+    var bests = [];
+    for (var k = 0; k < weeks.length; k++) {
+        for (var i = 0; i < weeks[k].length; i++) {
+            for (var j = 0; j < weeks[k][i].length; j++) {
+                if (weeks[k][i][j].length == max) {
+                    bests.push({
+                        weekNum: k,
+                        indexInWeek: i,
+                        indexInDay: j
+                    });
+                }
+            }
+        }
+    }
+    console.log(bests);
+    return bests;
 }
 
 function getWeek(i, w1, w2, w3, w4) {
@@ -267,14 +326,7 @@ function initWeek(weekArr) {
 }
 
 function initTable(table) {
-    var today = new Date();
-    var sunDate = new Date();
-    var ctr = 0;
-    while (sunDate.getDay() != 0) {
-        var sunDate = new Date();
-        sunDate.setDate(today.getDate() - ctr);
-        ctr += 1;
-    }
+    var sunDate = getSunDate();
     for (var i = 0; i < 28; i++) {
         var currDate = new Date();
         currDate.setDate(sunDate.getDate() + i);

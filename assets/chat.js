@@ -41,7 +41,8 @@ socket.on('chat', function(data){
     if (data.table.length != 0) {
         console.log(data.table);
         //console.log('<table>' + getStr(data.table) + '</table>');
-        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The earliest day when most people are free is: ' + data.dateToMeet + '</p></div>';
+        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The best times to meet are: ' + displayBestTimes(data) + '</p></div>';
+        //output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The earliest day when most people are free is: ' + data.dateToMeet + '</p></div>';
         //output.innerHTML += '<table>' + getStr(data.table, false, data.numUsers) + '</table>';
         updatedTable.innerHTML = '<table>' + getStr(data.table, true, data.numUsers) + '</table>';
         updatedTable.innerHTML += '<div id="t1" style="display: none;"><table>' + getStr2(data.week1) + '</table></div>';
@@ -51,6 +52,21 @@ socket.on('chat', function(data){
         listenForWeekButtonClicks();
     }
 });
+
+function displayBestTimes(data) {
+    var str = '';
+    var datesTimes = data.datesTimes;
+    var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    console.log(datesTimes);
+    for (var i = 0; i < datesTimes.length; i++) {
+        str += '<li>' + days[datesTimes[i].day] + ' ';
+        str += months[datesTimes[i].month] + ' ';
+        str += datesTimes[i].date + ' ';
+        str += datesTimes[i].hour + ':00</li>';
+    }
+    return str;
+}
 
 function listenForWeekButtonClicks() {
     document.getElementById('w1').addEventListener('click', function(){
