@@ -39,17 +39,12 @@ socket.on('chat', function(data){
         output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>' + data.handle + ': </strong>' + data.message + '</p></div>';
     }
     if (data.table.length != 0) {
-        console.log(data.table);
-        //console.log('<table>' + getStr(data.table) + '</table>');
         output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot: </strong>' + data.botResponse + displayBestTimes(data) + '</p></div>';
-        //output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The best times to meet are: ' + displayBestTimes(data) + '</p></div>';
-        //output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot:</strong> Check the updated table for everyone\'s availability. The earliest day when most people are free is: ' + data.dateToMeet + '</p></div>';
-        //output.innerHTML += '<table>' + getStr(data.table, false, data.numUsers) + '</table>';
         updatedTable.innerHTML = '<table>' + getStr(data.table, true, data.numUsers) + '</table>';
-        updatedTable.innerHTML += '<div id="t1" style="display: none;"><table>' + getStr2(data.week1) + '</table></div>';
-        updatedTable.innerHTML += '<div id="t2" style="display: none;"><table>' + getStr2(data.week2) + '</table></div>';
-        updatedTable.innerHTML += '<div id="t3" style="display: none;"><table>' + getStr2(data.week3) + '</table></div>';
-        updatedTable.innerHTML += '<div id="t4" style="display: none;"><table>' + getStr2(data.week4) + '</table></div>';
+        updatedTable.innerHTML += '<div id="t1" style="display: none;"><table>' + getStr2(data.week1, data.numUsers) + '</table></div>';
+        updatedTable.innerHTML += '<div id="t2" style="display: none;"><table>' + getStr2(data.week2, data.numUsers) + '</table></div>';
+        updatedTable.innerHTML += '<div id="t3" style="display: none;"><table>' + getStr2(data.week3, data.numUsers) + '</table></div>';
+        updatedTable.innerHTML += '<div id="t4" style="display: none;"><table>' + getStr2(data.week4, data.numUsers) + '</table></div>';
         listenForWeekButtonClicks();
     } else if (data.botResponse) {
         output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot: </strong>' + data.botResponse + '</p></div>';
@@ -61,12 +56,13 @@ function displayBestTimes(data) {
     var datesTimes = data.datesTimes;
     var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    console.log(datesTimes);
+    var quarters = [':00', ':15', ':30', ':45'];
     for (var i = 0; i < datesTimes.length; i++) {
         str += '<li>' + days[datesTimes[i].day] + ' ';
         str += months[datesTimes[i].month] + ' ';
         str += datesTimes[i].date + ' ';
-        str += datesTimes[i].hour + ':00</li>';
+        str += datesTimes[i].hour;
+        str += quarters[datesTimes[i].quarter] + '</li>';
     }
     return str;
 }
@@ -118,7 +114,6 @@ function getStr(table, weekButtons, numUsers) {
         }
         if (ctr > 0) {
             ctr = Math.floor(ctr / numUsers * 4);
-            console.log(ctr);
         }
         str += '<button style="background-color: #' + colors[ctr] + '!important;" type="button" class="btn btn-primary rounded-0"></button>';
         str += '</td>';
@@ -126,24 +121,27 @@ function getStr(table, weekButtons, numUsers) {
     return str + '</tr>';
 }
 
-function getStr2(week) {
+function getStr2(week, numUsers) {
     var str = '<tr><th></th><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr>';
+    var quarters = [':00', ':15', ':30', ':45'];
     for (var i = 0; i < 24; i++) {
-        str += '<td>' + i + ':00</td><td>';
-        for (var j = 0; j < 7; j++) {
-            var day = week[j];
-            if (day[i].length == 0) {
-                str += '<button type="button" class="btn btn-primary rounded-0"></button>';
+        for (var k = 0; k < 4; k++) {
+            str += '<td>' + i + quarters[k] + '</td><td>';
+            for (var j = 0; j < 7; j++) {
+                var day = week[j];
+                var ctr = 0;
+                for (var l = 0; l < day[i][k].length; l++) {
+                    ctr += 1;
+                }
+                if (ctr > 0) {
+                    ctr = Math.floor(ctr / numUsers * 4);
+                }
+                str += '<button style="background-color: #' + colors[ctr] + '!important;" type="button" class="btn btn-primary rounded-0"></button>';
+                str += '</td><td>';
             }
-            var ctr = 0;
-            for (var k = 0; k < day[i].length; k++) {
-                ctr += 1;
-            }
-            str += '<button style="background-color: #' + colors[ctr] + '!important;" type="button" class="btn btn-primary rounded-0"></button>';
-            str += '</td><td>';
+            str += '</td>';
+            str += '</tr><tr>';
         }
-        str += '</td>';
-        str += '</tr><tr>'
     }
     return str + '</tr>';
 }

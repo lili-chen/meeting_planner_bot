@@ -12,12 +12,16 @@ const messageSchema = new Schema({
     user: String
 });
 
+const tmpSchema = new Schema({
+    user: String
+})
+
 const meetingTableSchema = new Schema({
     tableNum: Number,
-    week1: [[[String]]],
-    week2: [[[String]]],
-    week3: [[[String]]],
-    week4: [[[String]]],
+    week1: [[[[tmpSchema]]]],
+    week2: [[[[tmpSchema]]]],
+    week3: [[[[tmpSchema]]]],
+    week4: [[[[tmpSchema]]]],
     monthView: [dateSchema],
     users: [String],
     messages: [messageSchema]

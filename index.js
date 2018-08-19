@@ -70,10 +70,10 @@ function saveQueryResults(query, data, callback) {
         const result = responses[0].queryResult;
         //console.log(result.parameters.fields.date.listValue.values);
         //console.log(result.parameters.fields['time-period'].listValue.values);
-        console.log(`  Query: ${result.queryText}`);
-        console.log(`  Response: ${result.fulfillmentText}`);
+        //console.log(`  Query: ${result.queryText}`);
+        //console.log(`  Response: ${result.fulfillmentText}`);
         if (result.intent) {
-          console.log(`  Intent: ${result.intent.displayName}`);
+          //console.log(`  Intent: ${result.intent.displayName}`);
           if (result.intent.displayName == 'availability (time periods)') {
               dates = result.parameters.fields.date.listValue.values;
               timePeriods = result.parameters.fields['time-period'].listValue.values;
@@ -81,7 +81,6 @@ function saveQueryResults(query, data, callback) {
               callback();
           } else {
               botResponse = result.fulfillmentText;
-              console.log(botResponse);
               io.sockets.emit('chat', {
                   message: data.message,
                   handle: data.handle,
@@ -198,12 +197,32 @@ function changeTableValues(monthView, week1, week2, week3, week4, data) {
     var availDate = new Date(dates[0].stringValue); //go through all dates
     var availTimeStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getHours();
     var availTimeEnd = new Date(timePeriods[0].structValue.fields.endTime.stringValue).getHours();
+
+    var availMinStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getMinutes();
+    var availMinEnd = new Date(timePeriods[0].structValue.fields.endTime.stringValue).getMinutes();
+
+    var startQuarter =  Math.floor(availMinStart / 15);
+    var endQuarter = Math.ceil(availMinEnd / 15);
     for (var i = 0; i < 28; i++) {
         if (equalDates(new Date(monthView[i].date), availDate)) {
             monthView[i].available.push(data.handle); //check if table[i] contains data.handle already
             var weekArr = getWeek(i, week1, week2, week3, week4);
-            for (var j = availTimeStart; j < availTimeEnd; j++) {
-                weekArr[(i % 7)][j].push(data.handle); //check if it contains data.handle already
+            if (availTimeStart == availTimeEnd && startQuarter < endQuarter) {
+                for (var k = startQuarter; k < endQuarter; k++) {
+                    weekArr[(i % 7)][availTimeStart][k].push({user: data.handle});
+                }
+            } else {
+                for (var k = startQuarter; k < 4; k++) {
+                    weekArr[(i % 7)][availTimeStart][k].push({user: data.handle}); //first hour
+                }
+                for (var k = 0; k < endQuarter; k++) {
+                    weekArr[(i % 7)][availTimeEnd][k].push({user: data.handle}); //last hour
+                }
+                for (var j = availTimeStart + 1; j < availTimeEnd; j++) { //rest of hours
+                    for (var k = 0; k < 4; k++) {
+                        weekArr[(i % 7)][j][k].push({user: data.handle}); //check if it contains data.handle already
+                    }
+                }
             }
             //console.log(weekArr);
         }
@@ -228,9 +247,7 @@ function updateMeetingTable(data) {
         }
         changeTableValues(currentTable.monthView, currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4, data);
         var bestTimes = getBestTimes(currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4);
-        //console.log(getDateFromIndices(bestTimes[0].weekNum, bestTimes[0].indexInWeek));
         var datesTimes = getDatesTimes(bestTimes);
-        //console.log(currentTable.monthView);
         io.sockets.emit('chat', {
             message: data.message,
             handle: data.handle,
@@ -258,7 +275,8 @@ function getDatesTimes(bestTimes) {
             day: day,
             month: month,
             date: date,
-            hour: bestTimes[i].indexInDay
+            hour: bestTimes[i].indexInDay,
+            quarter: bestTimes[i].indexInHour
         });
     }
     //console.log(result);
@@ -286,15 +304,19 @@ function getSunDate() {
 
 function getBestTimes(week1, week2, week3, week4) {
     var weeks = [week1, week2, week3, week4];
-    var max = weeks[0][0][0].length;
+    var max = weeks[0][0][0][0].length;
     var weekNum = 0;
     var indexInWeek = 0;
     var indexInDay = 0;
+    var indexInHour = 0;
     for (var k = 0; k < weeks.length; k++) {
         for (var i = 0; i < weeks[k].length; i++) {
             for (var j = 0; j < weeks[k][i].length; j++) {
-                if (weeks[k][i][j].length > max) {
-                    max = weeks[k][i][j].length;
+                for (var l = 0; l < weeks[k][i][j].length; l++) {
+                    if (weeks[k][i][j][l].length > max) {
+                        console.log(weeks[k][i][j][l].length);
+                        max = weeks[k][i][j][l].length;
+                    }
                 }
             }
         }
@@ -303,17 +325,19 @@ function getBestTimes(week1, week2, week3, week4) {
     for (var k = 0; k < weeks.length; k++) {
         for (var i = 0; i < weeks[k].length; i++) {
             for (var j = 0; j < weeks[k][i].length; j++) {
-                if (weeks[k][i][j].length == max) {
-                    bests.push({
-                        weekNum: k,
-                        indexInWeek: i,
-                        indexInDay: j
-                    });
+                for (var l = 0; l < weeks[k][i][j].length; l++) {
+                    if (weeks[k][i][j][l].length == max) {
+                        bests.push({
+                            weekNum: k,
+                            indexInWeek: i,
+                            indexInDay: j,
+                            indexInHour: l
+                        });
+                    }
                 }
             }
         }
     }
-    console.log(bests);
     return bests;
 }
 
@@ -333,7 +357,11 @@ function initWeek(weekArr) {
     for (var i = 0; i < 7; i++) {
         var hours = [];
         for (var j = 0; j < 24; j++) {
-            hours.push([]);
+            var fifteenMinIntervals = [];
+            for (var k = 0; k < 4; k++) {
+                fifteenMinIntervals.push([]);
+            }
+            hours.push(fifteenMinIntervals);
         }
         weekArr.push(hours);
     }
