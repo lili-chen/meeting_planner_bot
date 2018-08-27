@@ -1,5 +1,4 @@
 var express = require('express');
-//var cookieSession = require('cookie-session');
 var socket = require('socket.io');
 var authRoutes = require('./routes/auth-routes');
 var passportSetup = require('./config/passport-setup');
@@ -17,9 +16,6 @@ var session = require("express-session")({
 });
 var sharedsession = require("express-socket.io-session");
 
-//var RedisStore = require('connect-redis')(session);
-//var passportSocketIo = require("passport.socketio");
-
 var app = express();
 
 var dates = [];
@@ -29,13 +25,6 @@ var botResponse = '';
 app.set('view engine', 'ejs');
 
 app.use('/assets', express.static('assets'));
-
-/*
-app.use(cookieSession({
-    maxAge: 24 * 60 * 60 * 1000,
-    keys: [keys.session.cookieKey]
-}));
-*/
 
 app.use(session);
 
@@ -79,6 +68,11 @@ function saveQueryResults(query, data, callback) {
               timePeriods = result.parameters.fields['time-period'].listValue.values;
               botResponse = result.fulfillmentText;
               callback();
+          } else if (result.intent.displayName == 'availability (prepositions)') {
+              console.log(`  Intent: ${result.intent.displayName}`);
+              console.log(result.parameters.fields.date.listValue.values); //change to dates
+              console.log(result.parameters.fields.time.listValue.values);
+              console.log(result.parameters.fields.Preposition.listValue.values);
           } else {
               botResponse = result.fulfillmentText;
               io.sockets.emit('chat', {
