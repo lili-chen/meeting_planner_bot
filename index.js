@@ -21,6 +21,8 @@ var app = express();
 var dates = [];
 var timePeriods = [];
 var botResponse = '';
+var timePeriods2 = [];
+var intent;
 
 app.set('view engine', 'ejs');
 
@@ -63,6 +65,7 @@ function saveQueryResults(query, data, callback) {
         //console.log(`  Response: ${result.fulfillmentText}`);
         if (result.intent) {
           //console.log(`  Intent: ${result.intent.displayName}`);
+          intent = result.intent.displayName;
           if (result.intent.displayName == 'availability (time periods)') {
               dates = result.parameters.fields.date.listValue.values;
               timePeriods = result.parameters.fields['time-period'].listValue.values;
@@ -70,9 +73,15 @@ function saveQueryResults(query, data, callback) {
               callback();
           } else if (result.intent.displayName == 'availability (prepositions)') {
               console.log(`  Intent: ${result.intent.displayName}`);
-              console.log(result.parameters.fields.date.listValue.values); //change to dates
+              dates = result.parameters.fields.date.listValue.values;
+              //get time periods from time and preposition
+              console.log(result.parameters.fields.date.listValue.values);
               console.log(result.parameters.fields.time.listValue.values);
               console.log(result.parameters.fields.Preposition.listValue.values);
+              var times = result.parameters.fields.time.listValue.values;
+              var preps = result.parameters.fields.Preposition.listValue.values;
+              getTimePeriod(times[0].stringValue, preps[0].stringValue); //do this for all times/dates
+              callback();
           } else {
               botResponse = result.fulfillmentText;
               io.sockets.emit('chat', {
@@ -90,6 +99,26 @@ function saveQueryResults(query, data, callback) {
       .catch(err => {
         console.error('ERROR:', err);
       });
+}
+
+function getTimePeriod(time, preposition) {
+    if (preposition == 'at') {
+        var startTime = new Date(time);
+        var endTime = new Date(time);
+        endTime.setHours(startTime.getHours()+1); //check that this doesn't go over
+        console.log('startTime: ' + startTime.getHours());
+        console.log('endTime: ' + endTime.getHours());
+        timePeriods2.push({
+            startTime: startTime.getHours(),
+            endTime: endTime.getHours()
+        });
+    } else if (preposition == 'before') {
+
+    } else if (preposition == 'after') {
+
+    } else {
+        console.log('bad preposition: ' + preposition);
+    }
 }
 
 app.get('/chatroom', (req, res) => {
@@ -188,37 +217,75 @@ io.on('connection', (socket) => {
 });
 
 function changeTableValues(monthView, week1, week2, week3, week4, data) {
-    var availDate = new Date(dates[0].stringValue); //go through all dates
-    var availTimeStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getHours();
-    var availTimeEnd = new Date(timePeriods[0].structValue.fields.endTime.stringValue).getHours();
+    console.log(intent);
+    if (intent == 'availability (time periods)') {
+        var availDate = new Date(dates[0].stringValue); //go through all dates
+        var availTimeStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getHours();
+        var availTimeEnd = new Date(timePeriods[0].structValue.fields.endTime.stringValue).getHours();
 
-    var availMinStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getMinutes();
-    var availMinEnd = new Date(timePeriods[0].structValue.fields.endTime.stringValue).getMinutes();
+        var availMinStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getMinutes();
+        var availMinEnd = new Date(timePeriods[0].structValue.fields.endTime.stringValue).getMinutes();
 
-    var startQuarter =  Math.floor(availMinStart / 15);
-    var endQuarter = Math.ceil(availMinEnd / 15);
-    for (var i = 0; i < 28; i++) {
-        if (equalDates(new Date(monthView[i].date), availDate)) {
-            monthView[i].available.push(data.handle); //check if table[i] contains data.handle already
-            var weekArr = getWeek(i, week1, week2, week3, week4);
-            if (availTimeStart == availTimeEnd && startQuarter < endQuarter) {
-                for (var k = startQuarter; k < endQuarter; k++) {
-                    weekArr[(i % 7)][availTimeStart][k].push({user: data.handle});
-                }
-            } else {
-                for (var k = startQuarter; k < 4; k++) {
-                    weekArr[(i % 7)][availTimeStart][k].push({user: data.handle}); //first hour
-                }
-                for (var k = 0; k < endQuarter; k++) {
-                    weekArr[(i % 7)][availTimeEnd][k].push({user: data.handle}); //last hour
-                }
-                for (var j = availTimeStart + 1; j < availTimeEnd; j++) { //rest of hours
-                    for (var k = 0; k < 4; k++) {
-                        weekArr[(i % 7)][j][k].push({user: data.handle}); //check if it contains data.handle already
+        var startQuarter =  Math.floor(availMinStart / 15);
+        var endQuarter = Math.ceil(availMinEnd / 15);
+        for (var i = 0; i < 28; i++) {
+            if (equalDates(new Date(monthView[i].date), availDate)) {
+                monthView[i].available.push(data.handle); //check if table[i] contains data.handle already
+                var weekArr = getWeek(i, week1, week2, week3, week4);
+                if (availTimeStart == availTimeEnd && startQuarter < endQuarter) {
+                    for (var k = startQuarter; k < endQuarter; k++) {
+                        weekArr[(i % 7)][availTimeStart][k].push({user: data.handle});
+                    }
+                } else {
+                    for (var k = startQuarter; k < 4; k++) {
+                        weekArr[(i % 7)][availTimeStart][k].push({user: data.handle}); //first hour
+                    }
+                    for (var k = 0; k < endQuarter; k++) {
+                        weekArr[(i % 7)][availTimeEnd][k].push({user: data.handle}); //last hour
+                    }
+                    for (var j = availTimeStart + 1; j < availTimeEnd; j++) { //rest of hours
+                        for (var k = 0; k < 4; k++) {
+                            weekArr[(i % 7)][j][k].push({user: data.handle}); //check if it contains data.handle already
+                        }
                     }
                 }
+                //console.log(weekArr);
             }
-            //console.log(weekArr);
+        }
+    } else if (intent == 'availability (prepositions)'){
+        console.log('preps');
+        var availDate = new Date(dates[0].stringValue); //go through all dates
+        var availTimeStart = timePeriods2[0].startTime;
+        var availTimeEnd = timePeriods2[0].endTime;
+
+        var availMinStart = 0; //TODO get actual min start and end
+        var availMinEnd = 0;
+
+        var startQuarter =  Math.floor(availMinStart / 15);
+        var endQuarter = Math.ceil(availMinEnd / 15);
+        for (var i = 0; i < 28; i++) {
+            if (equalDates(new Date(monthView[i].date), availDate)) {
+                monthView[i].available.push(data.handle); //check if table[i] contains data.handle already
+                var weekArr = getWeek(i, week1, week2, week3, week4);
+                if (availTimeStart == availTimeEnd && startQuarter < endQuarter) {
+                    for (var k = startQuarter; k < endQuarter; k++) {
+                        weekArr[(i % 7)][availTimeStart][k].push({user: data.handle});
+                    }
+                } else {
+                    for (var k = startQuarter; k < 4; k++) {
+                        weekArr[(i % 7)][availTimeStart][k].push({user: data.handle}); //first hour
+                    }
+                    for (var k = 0; k < endQuarter; k++) {
+                        weekArr[(i % 7)][availTimeEnd][k].push({user: data.handle}); //last hour
+                    }
+                    for (var j = availTimeStart + 1; j < availTimeEnd; j++) { //rest of hours
+                        for (var k = 0; k < 4; k++) {
+                            weekArr[(i % 7)][j][k].push({user: data.handle}); //check if it contains data.handle already
+                        }
+                    }
+                }
+                //console.log(weekArr);
+            }
         }
     }
 }
