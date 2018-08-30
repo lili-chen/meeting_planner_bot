@@ -22,6 +22,7 @@ var dates = [];
 var timePeriods = [];
 var botResponse = '';
 var timePeriods2 = [];
+var minStartOrEnd;
 var intent;
 
 app.set('view engine', 'ejs');
@@ -81,6 +82,7 @@ function saveQueryResults(query, data, callback) {
               var times = result.parameters.fields.time.listValue.values;
               var preps = result.parameters.fields.Preposition.listValue.values;
               getTimePeriod(times[0].stringValue, preps[0].stringValue); //do this for all times/dates
+              botResponse = result.fulfillmentText;
               callback();
           } else {
               botResponse = result.fulfillmentText;
@@ -112,10 +114,23 @@ function getTimePeriod(time, preposition) {
             startTime: startTime.getHours(),
             endTime: endTime.getHours()
         });
+        minStartOrEnd = startTime.getMinutes();
     } else if (preposition == 'before') {
-
+        var endTime = new Date(time);
+        console.log('endTime: ' + endTime.getHours());
+        timePeriods2.push({
+            startTime: 0,
+            endTime: endTime.getHours()
+        });
+        minStartOrEnd = endTime.getMinutes();
     } else if (preposition == 'after') {
-
+        var startTime = new Date(time);
+        console.log('startTime: ' + startTime.getHours());
+        timePeriods2.push({
+            startTime: startTime.getHours(),
+            endTime: 23 //make this 12am
+        });
+        minStartOrEnd = startTime.getMinutes();
     } else {
         console.log('bad preposition: ' + preposition);
     }
@@ -258,8 +273,8 @@ function changeTableValues(monthView, week1, week2, week3, week4, data) {
         var availTimeStart = timePeriods2[0].startTime;
         var availTimeEnd = timePeriods2[0].endTime;
 
-        var availMinStart = 0; //TODO get actual min start and end
-        var availMinEnd = 0;
+        var availMinStart = minStartOrEnd;
+        var availMinEnd = minStartOrEnd;
 
         var startQuarter =  Math.floor(availMinStart / 15);
         var endQuarter = Math.ceil(availMinEnd / 15);
