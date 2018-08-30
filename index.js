@@ -128,7 +128,7 @@ function getTimePeriod(time, preposition) {
         console.log('startTime: ' + startTime.getHours());
         timePeriods2.push({
             startTime: startTime.getHours(),
-            endTime: 23 //make this 12am
+            endTime: 24 //TODO make this 12am
         });
         minStartOrEnd = startTime.getMinutes();
     } else {
@@ -275,7 +275,6 @@ function changeTableValues(monthView, week1, week2, week3, week4, data) {
 
         var availMinStart = minStartOrEnd;
         var availMinEnd = minStartOrEnd;
-
         var startQuarter =  Math.floor(availMinStart / 15);
         var endQuarter = Math.ceil(availMinEnd / 15);
         for (var i = 0; i < 28; i++) {
@@ -296,6 +295,11 @@ function changeTableValues(monthView, week1, week2, week3, week4, data) {
                     for (var j = availTimeStart + 1; j < availTimeEnd; j++) { //rest of hours
                         for (var k = 0; k < 4; k++) {
                             weekArr[(i % 7)][j][k].push({user: data.handle}); //check if it contains data.handle already
+                        }
+                    }
+                    if (availMinEnd == 24) {
+                        for (var k = 0; k < 4; k++) {
+                            weekArr[(i % 7)][23][k].push({user: data.handle}); //check if it contains data.handle already
                         }
                     }
                 }
