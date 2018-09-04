@@ -73,12 +73,7 @@ function saveQueryResults(query, data, callback) {
               botResponse = result.fulfillmentText;
               callback();
           } else if (result.intent.displayName == 'availability (prepositions)') {
-              console.log(`  Intent: ${result.intent.displayName}`);
               dates = result.parameters.fields.date.listValue.values;
-              //get time periods from time and preposition
-              console.log(result.parameters.fields.date.listValue.values);
-              console.log(result.parameters.fields.time.listValue.values);
-              console.log(result.parameters.fields.Preposition.listValue.values);
               var times = result.parameters.fields.time.listValue.values;
               var preps = result.parameters.fields.Preposition.listValue.values;
               getTimePeriod(times[0].stringValue, preps[0].stringValue); //do this for all times/dates
@@ -93,7 +88,6 @@ function saveQueryResults(query, data, callback) {
                   botResponse: botResponse
               });
           }
-          //console.log(result.fulfillmentText);
         } else {
           //console.log(`  No intent matched.`);
         }
@@ -108,8 +102,6 @@ function getTimePeriod(time, preposition) {
         var startTime = new Date(time);
         var endTime = new Date(time);
         endTime.setHours(startTime.getHours()+1); //check that this doesn't go over
-        console.log('startTime: ' + startTime.getHours());
-        console.log('endTime: ' + endTime.getHours());
         timePeriods2.push({
             startTime: startTime.getHours(),
             endTime: endTime.getHours()
@@ -117,7 +109,6 @@ function getTimePeriod(time, preposition) {
         minStartOrEnd = startTime.getMinutes();
     } else if (preposition == 'before') {
         var endTime = new Date(time);
-        console.log('endTime: ' + endTime.getHours());
         timePeriods2.push({
             startTime: 0,
             endTime: endTime.getHours()
@@ -125,10 +116,9 @@ function getTimePeriod(time, preposition) {
         minStartOrEnd = endTime.getMinutes();
     } else if (preposition == 'after') {
         var startTime = new Date(time);
-        console.log('startTime: ' + startTime.getHours());
         timePeriods2.push({
             startTime: startTime.getHours(),
-            endTime: 24 //TODO make this 12am
+            endTime: 24
         });
         minStartOrEnd = startTime.getMinutes();
     } else {
@@ -168,51 +158,21 @@ io.on('connection', (socket) => {
     socket.on('chat', function(data){
         //io.sockets.emit('chat', data);
         //console.log(socket.handshake.session.passport.user);
-        var message = data.message;
         //var thisUser = socket.handshake.session.passport.user;
         MeetingTable.findOne({tableNum: 1}).then((record) => {
             if (!record) {
-                var table = [];
-                var week1 = [];
-                var week2 = [];
-                var week3 = [];
-                var week4 = [];
-                initTable(table);
-                initWeek(week1);
-                initWeek(week2);
-                initWeek(week3);
-                initWeek(week4);
-                var users = [];
-                users.push(data.handle);
-                var messages = [];
-                messages.push({
-                    user: data.handle,
-                    content: message,
-                    timeSent: (new Date())
-                });
-                new MeetingTable({
-                    tableNum: 1,
-                    week1: week1,
-                    week2: week2,
-                    week3: week3,
-                    week4: week4,
-                    monthView: table,
-                    users: users,
-                    messages: messages
-                }).save().then((newMT) => {
-                    console.log('new MT created');
-                });
+                initMT(data);
             } else {
                 record.messages.push({
                     user: data.handle,
-                    content: message,
+                    content: data.message,
                     timeSent: (new Date())
                 });
                 record.save();
             }
         });
-        if (message.substring(0, 5) == '#bot ') {
-            saveQueryResults(message.substring(5), data, function() {
+        if (data.message.substring(0, 5) == '#bot ') {
+            saveQueryResults(data.message.substring(5), data, function() {
                 updateMeetingTable(data);
             });
         } else {
@@ -231,52 +191,64 @@ io.on('connection', (socket) => {
 
 });
 
+function initWeeks(week1, week2, week3, week4) {
+    initWeek(week1);
+    initWeek(week2);
+    initWeek(week3);
+    initWeek(week4);
+}
+
+function initMT(data) {
+    var table = [], week1 = [], week2 = [], week3 = [], week4 = [];
+    initTable(table);
+    initWeeks(week1, week2, week3, week4);
+
+    var users = [];
+    users.push(data.handle);
+    var messages = [];
+    messages.push({
+        user: data.handle,
+        content: data.message,
+        timeSent: (new Date())
+    });
+    new MeetingTable({
+        tableNum: 1,
+        week1: week1,
+        week2: week2,
+        week3: week3,
+        week4: week4,
+        monthView: table,
+        users: users,
+        messages: messages
+    }).save().then((newMT) => {
+        console.log('new MT created');
+    });
+}
+
 function changeTableValues(monthView, week1, week2, week3, week4, data) {
     console.log(intent);
+    console.log(timePeriods[0]);
     if (intent == 'availability (time periods)') {
         var availDate = new Date(dates[0].stringValue); //go through all dates
         var availTimeStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getHours();
         var availTimeEnd = new Date(timePeriods[0].structValue.fields.endTime.stringValue).getHours();
-
         var availMinStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getMinutes();
         var availMinEnd = new Date(timePeriods[0].structValue.fields.endTime.stringValue).getMinutes();
-
         var startQuarter =  Math.floor(availMinStart / 15);
         var endQuarter = Math.ceil(availMinEnd / 15);
-        for (var i = 0; i < 28; i++) {
-            if (equalDates(new Date(monthView[i].date), availDate)) {
-                monthView[i].available.push(data.handle); //check if table[i] contains data.handle already
-                var weekArr = getWeek(i, week1, week2, week3, week4);
-                if (availTimeStart == availTimeEnd && startQuarter < endQuarter) {
-                    for (var k = startQuarter; k < endQuarter; k++) {
-                        weekArr[(i % 7)][availTimeStart][k].push({user: data.handle});
-                    }
-                } else {
-                    for (var k = startQuarter; k < 4; k++) {
-                        weekArr[(i % 7)][availTimeStart][k].push({user: data.handle}); //first hour
-                    }
-                    for (var k = 0; k < endQuarter; k++) {
-                        weekArr[(i % 7)][availTimeEnd][k].push({user: data.handle}); //last hour
-                    }
-                    for (var j = availTimeStart + 1; j < availTimeEnd; j++) { //rest of hours
-                        for (var k = 0; k < 4; k++) {
-                            weekArr[(i % 7)][j][k].push({user: data.handle}); //check if it contains data.handle already
-                        }
-                    }
-                }
-                //console.log(weekArr);
-            }
-        }
+        var lastHour = false;
     } else if (intent == 'availability (prepositions)'){
-        console.log('preps');
         var availDate = new Date(dates[0].stringValue); //go through all dates
         var availTimeStart = timePeriods2[0].startTime;
         var availTimeEnd = timePeriods2[0].endTime;
-
         var availMinStart = minStartOrEnd;
         var availMinEnd = minStartOrEnd;
         var startQuarter =  Math.floor(availMinStart / 15);
         var endQuarter = Math.ceil(availMinEnd / 15);
+        var lastHour = (availMinEnd == 24);
+    }
+    populateSlots(availDate, availTimeStart, availTimeEnd, availMinStart, availMinEnd, startQuarter, endQuarter, lastHour);
+    function populateSlots(availDate, availTimeStart, availTimeEnd, availMinStart, availMinEnd, startQuarter, endQuarter, lastHour) {
         for (var i = 0; i < 28; i++) {
             if (equalDates(new Date(monthView[i].date), availDate)) {
                 monthView[i].available.push(data.handle); //check if table[i] contains data.handle already
@@ -297,7 +269,7 @@ function changeTableValues(monthView, week1, week2, week3, week4, data) {
                             weekArr[(i % 7)][j][k].push({user: data.handle}); //check if it contains data.handle already
                         }
                     }
-                    if (availMinEnd == 24) {
+                    if (lastHour) {
                         for (var k = 0; k < 4; k++) {
                             weekArr[(i % 7)][23][k].push({user: data.handle}); //check if it contains data.handle already
                         }
@@ -328,6 +300,7 @@ function updateMeetingTable(data) {
         changeTableValues(currentTable.monthView, currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4, data);
         var bestTimes = getBestTimes(currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4);
         var datesTimes = getDatesTimes(bestTimes);
+        var bestPeriods = getBestPeriods(datesTimes);
         io.sockets.emit('chat', {
             message: data.message,
             handle: data.handle,
@@ -338,7 +311,8 @@ function updateMeetingTable(data) {
             week4: currentTable.week4,
             numUsers: currentTable.users.length,
             datesTimes: datesTimes,
-            botResponse: botResponse
+            botResponse: botResponse,
+            bestPeriods: bestPeriods
         });
         currentTable.save();
     });
@@ -361,6 +335,42 @@ function getDatesTimes(bestTimes) {
     }
     //console.log(result);
     return result;
+}
+
+function getBestPeriods(datesTimes) {
+    var result = [];
+    var i = 0;
+    console.log(datesTimes);
+    while (i < datesTimes.length) {
+        var j = i;
+        while (j + 1 < datesTimes.length && consecutive(datesTimes[j], datesTimes[j + 1])) {
+            j++;
+        }
+        console.log('start of period: ');
+        console.log(datesTimes[i].hour);
+        console.log(datesTimes[i].quarter);
+        console.log('end of period: ');
+        console.log(datesTimes[j].hour);
+        console.log(datesTimes[j].quarter);
+        result.push({
+            start: datesTimes[i],
+            end: datesTimes[j]
+        });
+        i = j + 1;
+    }
+    console.log(result);
+    return result;
+}
+
+function consecutive(dt1, dt2) {
+    if (dt1.date != dt2.date) return false;
+    if (dt1.hour == dt2.hour && dt1.quarter + 1 == dt2.quarter) {
+        console.log('same hour, one quarter apart');
+        return true;
+    } else if (dt1.hour + 1 == dt2.hour && dt1.quarter == 3 && dt2.quarter == 0) {
+        return true;
+    }
+    return false;
 }
 
 function getDateFromIndices(weekNum, indexInWeek) {

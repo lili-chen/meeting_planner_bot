@@ -39,7 +39,8 @@ socket.on('chat', function(data){
         output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>' + data.handle + ': </strong>' + data.message + '</p></div>';
     }
     if (data.table.length != 0) {
-        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot: </strong>' + data.botResponse + displayBestTimes(data) + '</p></div>';
+        //output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot: </strong>' + data.botResponse + displayBestTimes(data) + '</p></div>';
+        output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>Bot: </strong>' + data.botResponse + displayBestPeriods(data) + '</p></div>';
         updatedTable.innerHTML = '<table>' + getStr(data.table, true, data.numUsers) + '</table>';
         updatedTable.innerHTML += '<div id="t1" style="display: none;"><table>' + getStr2(data.week1, data.numUsers) + '</table></div>';
         updatedTable.innerHTML += '<div id="t2" style="display: none;"><table>' + getStr2(data.week2, data.numUsers) + '</table></div>';
@@ -66,6 +67,25 @@ function displayBestTimes(data) {
     }
     return str;
 }
+
+function displayBestPeriods(data) {
+    var str = '';
+    var bestPeriods = data.bestPeriods;
+    var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var quarters = [':00', ':15', ':30', ':45'];
+    for (var i = 0; i < bestPeriods.length; i++) {
+        str += '<li>' + days[bestPeriods[i].start.day] + ' ';
+        str += months[bestPeriods[i].start.month] + ' ';
+        str += bestPeriods[i].start.date + ' ';
+        str += bestPeriods[i].start.hour;
+        str += quarters[bestPeriods[i].start.quarter] + ' to ';
+        str += bestPeriods[i].end.hour;
+        str += quarters[bestPeriods[i].end.quarter] + '</li>';
+    }
+    return str;
+}
+
 
 function listenForWeekButtonClicks() {
     document.getElementById('w1').addEventListener('click', function(){
