@@ -341,6 +341,7 @@ function getBestPeriods(datesTimes) {
     var result = [];
     var i = 0;
     console.log(datesTimes);
+    var endTimes = [];
     while (i < datesTimes.length) {
         var j = i;
         while (j + 1 < datesTimes.length && consecutive(datesTimes[j], datesTimes[j + 1])) {
@@ -354,12 +355,31 @@ function getBestPeriods(datesTimes) {
         console.log(datesTimes[j].quarter);
         result.push({
             start: datesTimes[i],
-            end: datesTimes[j]
+            end: getNextInterval(datesTimes[j])
         });
         i = j + 1;
     }
     console.log(result);
     return result;
+}
+
+function getNextInterval(interval) {
+    var quarter;
+    var hour;
+    if (interval.quarter == 3) {
+        quarter = 0;
+        hour = interval.hour + 1;
+    } else {
+        quarter = interval.quarter + 1;
+        hour = interval.hour;
+    }
+    return ({
+        day: interval.day,
+        month: interval.month,
+        date: interval.date,
+        hour: hour,
+        quarter: quarter
+    });
 }
 
 function consecutive(dt1, dt2) {
