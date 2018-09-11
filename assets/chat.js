@@ -2,6 +2,7 @@
 var socket = io.connect('http://localhost:3000');
 
 var colors = ['FFFFF', 'CCE5FF', '99CCFF', '66B2FF', '3399FF'];
+var room;
 
 // Query DOM
 var message = document.getElementById('message'),
@@ -14,7 +15,8 @@ var message = document.getElementById('message'),
 btn.addEventListener('click', function(){
   socket.emit('chat', {
       message: message.value,
-      handle: handle.value
+      handle: handle.value,
+      room: room
   });
   message.value = "";
 });
@@ -168,4 +170,12 @@ function getStr2(week, numUsers) {
 
 socket.on('typing', function(data) {
     feedback.innerHTML = '<p><em>' + data + ' is typing a message...</em></p>';
+});
+
+//var room = "inputFromUser"; //get this from user
+socket.on('connect', function() {
+    room = prompt("What room would you like to join?", "Some Default Room");
+    console.log(room);
+   // Connected, let's sign-up for to receive messages for this room
+   socket.emit('room', room);
 });

@@ -25,6 +25,8 @@ var timePeriods2 = [];
 var minStartOrEnd;
 var intent;
 
+var thisRoom;
+
 app.set('view engine', 'ejs');
 
 app.use('/assets', express.static('assets'));
@@ -154,35 +156,46 @@ io.on('connection', (socket) => {
 
     console.log('made socket connection', socket.id);
 
+    // once a client has connected, we expect to get a ping from them saying what room they want to join
+    socket.on('room', function(room) {
+        console.log('joining room: ' + room);
+        socket.join(room);
+        socket.room = room; //TODO fix this
+    });
+
     // Handle chat event
     socket.on('chat', function(data){
         //io.sockets.emit('chat', data);
         //console.log(socket.handshake.session.passport.user);
         //var thisUser = socket.handshake.session.passport.user;
-        MeetingTable.findOne({tableNum: 1}).then((record) => {
-            if (!record) {
-                initMT(data);
-            } else {
-                record.messages.push({
-                    user: data.handle,
-                    content: data.message,
-                    timeSent: (new Date())
+        console.log('data.room: ' + data.room);
+        console.log('socket.room: ' + socket.room);
+        if (socket.room == data.room) {
+            console.log('same room!');
+            MeetingTable.findOne({tableNum: 1}).then((record) => {
+                if (!record) {
+                    initMT(data);
+                } else {
+                    record.messages.push({
+                        user: data.handle,
+                        content: data.message,
+                        timeSent: (new Date())
+                    });
+                    record.save();
+                }
+            });
+            if (data.message.substring(0, 5) == '#bot ') {
+                saveQueryResults(data.message.substring(5), data, function() {
+                    updateMeetingTable(data);
                 });
-                record.save();
+            } else {
+                io.sockets.emit('chat', {
+                    message: data.message,
+                    handle: data.handle,
+                    table: []
+                });
             }
-        });
-        if (data.message.substring(0, 5) == '#bot ') {
-            saveQueryResults(data.message.substring(5), data, function() {
-                updateMeetingTable(data);
-            });
-        } else {
-            io.sockets.emit('chat', {
-                message: data.message,
-                handle: data.handle,
-                table: []
-            });
         }
-
     });
 
     socket.on('typing', function(data) {
