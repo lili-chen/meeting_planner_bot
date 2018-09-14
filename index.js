@@ -160,41 +160,40 @@ io.on('connection', (socket) => {
     socket.on('room', function(room) {
         console.log('joining room: ' + room);
         socket.join(room);
-        socket.room = room; //TODO fix this
+        socket.room = room;
     });
+    //https://gist.github.com/crtr0/2896891
+    //https://gist.github.com/kylewelsby/2b49d2db31d45b939479
+    //https://www.tutorialspoint.com/socket.io/socket.io_rooms.htm
+    //https://socket.io/docs/rooms-and-namespaces/#Rooms
 
     // Handle chat event
     socket.on('chat', function(data){
         //io.sockets.emit('chat', data);
         //console.log(socket.handshake.session.passport.user);
         //var thisUser = socket.handshake.session.passport.user;
-        console.log('data.room: ' + data.room);
-        console.log('socket.room: ' + socket.room);
-        if (socket.room == data.room) {
-            console.log('same room!');
-            MeetingTable.findOne({tableNum: 1}).then((record) => {
-                if (!record) {
-                    initMT(data);
-                } else {
-                    record.messages.push({
-                        user: data.handle,
-                        content: data.message,
-                        timeSent: (new Date())
-                    });
-                    record.save();
-                }
-            });
-            if (data.message.substring(0, 5) == '#bot ') {
-                saveQueryResults(data.message.substring(5), data, function() {
-                    updateMeetingTable(data);
-                });
+        MeetingTable.findOne({tableNum: 1}).then((record) => {
+            if (!record) {
+                initMT(data);
             } else {
-                io.sockets.emit('chat', {
-                    message: data.message,
-                    handle: data.handle,
-                    table: []
+                record.messages.push({
+                    user: data.handle,
+                    content: data.message,
+                    timeSent: (new Date())
                 });
+                record.save();
             }
+        });
+        if (data.message.substring(0, 5) == '#bot ') {
+            saveQueryResults(data.message.substring(5), data, function() {
+                updateMeetingTable(data);
+            });
+        } else {
+            io.sockets.in(data.room).emit('chat', {
+                message: data.message,
+                handle: data.handle,
+                table: []
+            });
         }
     });
 
