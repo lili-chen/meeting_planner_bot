@@ -83,7 +83,7 @@ function saveQueryResults(query, data, callback) {
               callback();
           } else {
               botResponse = result.fulfillmentText;
-              io.sockets.emit('chat', {
+              io.sockets.in(data.room).emit('chat', {
                   message: data.message,
                   handle: data.handle,
                   table: [],
@@ -198,7 +198,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('typing', function(data) {
-        socket.broadcast.emit('typing', data);
+        socket.broadcast.to(data.room).emit('typing', data.handle);
     });
 
 });
@@ -313,7 +313,7 @@ function updateMeetingTable(data) {
         var bestTimes = getBestTimes(currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4);
         var datesTimes = getDatesTimes(bestTimes);
         var bestPeriods = getBestPeriods(datesTimes);
-        io.sockets.emit('chat', {
+        io.sockets.in(data.room).emit('chat', {
             message: data.message,
             handle: data.handle,
             table: currentTable.monthView,

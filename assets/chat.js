@@ -29,7 +29,7 @@ message.addEventListener("keyup", function(event) {
  }); //https://www.w3schools.com/howto/howto_js_trigger_button_enter.asp
 
 message.addEventListener('keypress', function() {
-    socket.emit('typing', handle.value);
+    socket.emit('typing', {handle: handle.value, room: room});
 });
 
 // Listen for events
