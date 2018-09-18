@@ -6,7 +6,7 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var keys = require('./config/keys');
 var botSetup = require('./config/bot-setup');
-var MeetingTable = require('./models/meeting-table-model');
+var Group = require('./models/group-model');
 var User = require('./models/user-model');
 
 var session = require("express-session")({
@@ -132,7 +132,8 @@ app.get('/chatroom', (req, res) => {
     //console.log(req);
     if (req.isAuthenticated()) {
         console.log(req.user);
-        MeetingTable.findOne({tableNum: 1}).then((record) => {
+        //TODO change this to get the room for the user
+        Group.findOne({tableNum: 1}).then((record) => {
             if (record) {
                 res.render('chatroom', {username: req.user.username, id: req.user.id, messages: record.messages});
             } else {
@@ -172,7 +173,7 @@ io.on('connection', (socket) => {
         //io.sockets.emit('chat', data);
         //console.log(socket.handshake.session.passport.user);
         //var thisUser = socket.handshake.session.passport.user;
-        MeetingTable.findOne({tableNum: 1}).then((record) => {
+        Group.findOne({roomName: data.room}).then((record) => {
             if (!record) {
                 initMT(data);
             } else {
@@ -186,7 +187,7 @@ io.on('connection', (socket) => {
         });
         if (data.message.substring(0, 5) == '#bot ') {
             saveQueryResults(data.message.substring(5), data, function() {
-                updateMeetingTable(data);
+                updateGroup(data);
             });
         } else {
             io.sockets.in(data.room).emit('chat', {
@@ -214,7 +215,6 @@ function initMT(data) {
     var table = [], week1 = [], week2 = [], week3 = [], week4 = [];
     initTable(table);
     initWeeks(week1, week2, week3, week4);
-
     var users = [];
     users.push(data.handle);
     var messages = [];
@@ -223,7 +223,7 @@ function initMT(data) {
         content: data.message,
         timeSent: (new Date())
     });
-    new MeetingTable({
+    new Group({
         tableNum: 1,
         week1: week1,
         week2: week2,
@@ -231,7 +231,8 @@ function initMT(data) {
         week4: week4,
         monthView: table,
         users: users,
-        messages: messages
+        messages: messages,
+        roomName: data.room
     }).save().then((newMT) => {
         console.log('new MT created');
     });
@@ -302,8 +303,8 @@ function contains(users, handle) {
     return false;
 }
 
-function updateMeetingTable(data) {
-    MeetingTable.findOne({tableNum: 1}).then((currentTable) => {
+function updateGroup(data) {
+    Group.findOne({roomName: data.room}).then((currentTable) => {
         console.log('found table');
         if (!currentTable.users || !contains(currentTable.users, data.handle)) {
             console.log('adding handle to users');

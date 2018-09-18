@@ -16,7 +16,7 @@ const tmpSchema = new Schema({
     user: String
 })
 
-const meetingTableSchema = new Schema({
+const groupSchema = new Schema({
     tableNum: Number,
     week1: [[[[tmpSchema]]]],
     week2: [[[[tmpSchema]]]],
@@ -24,9 +24,10 @@ const meetingTableSchema = new Schema({
     week4: [[[[tmpSchema]]]],
     monthView: [dateSchema],
     users: [String],
-    messages: [messageSchema]
+    messages: [messageSchema],
+    roomName: String
 });
 
-const MeetingTable = mongoose.model('meetingtable', meetingTableSchema);
+const Group = mongoose.model('group', groupSchema);
 
-module.exports = MeetingTable;
+module.exports = Group;
