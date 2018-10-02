@@ -129,7 +129,8 @@ function getStr(table, weekButtons, numUsers) {
         } else if (i % 7 == 0) {
             str += '</tr><tr>';
         }
-        str += '<td><h6 style="text-align:right; font-weight: lighter; padding: 0.5rem 0.5rem 1rem 2rem;">' + ((new Date(table[i].date)).getDate()) + '</h6>';
+        //str += '<td><h6>' + ((new Date(table[i].date)).getDate()) + '</h6>';
+        str += '<td>';
         var ctr = 0;
         for (var j = 0; j < table[i].available.length; j++) {
             ctr += 1;
@@ -137,7 +138,7 @@ function getStr(table, weekButtons, numUsers) {
         if (ctr > 0) {
             ctr = Math.floor(ctr / numUsers * 4);
         }
-        str += '<button style="background-color: #' + colors[ctr] + '!important;" type="button" class="btn btn-primary rounded-0"></button>';
+        str += '<div style="background-color: #' + colors[ctr] + '!important;" class="cell">' + ((new Date(table[i].date)).getDate()) + '</div>';
         str += '</td>';
     }
     return str + '</tr>';
@@ -158,7 +159,7 @@ function getStr2(week, numUsers) {
                 if (ctr > 0) {
                     ctr = Math.floor(ctr / numUsers * 4);
                 }
-                str += '<button style="background-color: #' + colors[ctr] + '!important;" type="button" class="btn btn-primary rounded-0"></button>';
+                str += '<div style="background-color: #' + colors[ctr] + '!important;" class="cell2"></div>';
                 str += '</td><td>';
             }
             str += '</td>';

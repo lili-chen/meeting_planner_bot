@@ -13,7 +13,7 @@ h3 {
 }
 #updatedTable {
     padding-left: 2rem;
-    height: 600px;
+    height: 40rem;
     overflow: auto;
 }
 #logout {
@@ -25,13 +25,20 @@ h3 {
 }
 td {
     border: 1px solid black;
+    height: 16px;
 }
 
 th {
     font-size: 1.5rem;
     font-weight: lighter;
 }
-button {
+.cell {
+    height: 100%;
+    width: 100%;
+    padding-left: 2rem;
+    padding-bottom: 2rem;
+}
+.cell2 {
     height: 100%;
     width: 100%;
 }
