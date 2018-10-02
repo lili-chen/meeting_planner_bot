@@ -21,7 +21,7 @@ h3 {
 }
 #chat-window {
     overflow: auto;
-    height: 550px;
+    height: 500px;
 }
 td {
     border: 1px solid black;
@@ -41,4 +41,7 @@ th {
 .cell2 {
     height: 100%;
     width: 100%;
+}
+#group-chat {
+    padding: 20px 20px 20px 20px;
 }

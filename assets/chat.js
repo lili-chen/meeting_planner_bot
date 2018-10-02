@@ -3,6 +3,18 @@ var socket = io.connect('http://localhost:3000');
 
 var colors = ['FFFFF', 'CCE5FF', '99CCFF', '66B2FF', '3399FF'];
 var room;
+var side = false;
+
+function toggleSide() {
+    console.log('toggling');
+    console.log(document.getElementById('updatedTableContainer').style.display);
+    if (side) {
+        document.getElementById('updatedTableContainer').style.display = "block";
+    } else {
+        document.getElementById('updatedTableContainer').style.display = "none";
+    }
+    side = !side;
+}
 
 // Query DOM
 var message = document.getElementById('message'),
@@ -10,8 +22,10 @@ var message = document.getElementById('message'),
       btn = document.getElementById('send'),
       output = document.getElementById('output');
       feedback = document.getElementById('feedback');
+      toggle = document.getElementById('toggle');
 
 // Emit events
+
 btn.addEventListener('click', function(){
   socket.emit('chat', {
       message: message.value,
@@ -19,6 +33,10 @@ btn.addEventListener('click', function(){
       room: room
   });
   message.value = "";
+});
+
+toggle.addEventListener('click', function(){
+  toggleSide();
 });
 
 message.addEventListener("keyup", function(event) {

@@ -17,8 +17,10 @@
         -->
         <div class="row" style="width: 95%;">
         <div class="col-lg-4">
-            <h3>Up-to-Date Availabilities</h3>
-            <div id="updatedTable"></div>
+            <div id="updatedTableContainer">
+                <h3>Up-to-Date Availabilities</h3>
+                <div id="updatedTable"></div>
+            </div>
         </div>
         <div class="col-lg-8">
         <h4><%= username %></h4>
@@ -27,7 +29,7 @@
             <h1>Chat</h1>
             <h5>Start your message with #bot to include the bot in your conversation!</h5>
             <a class="btn btn-primary">Tips for Bot Interaction</a>
-            <a class="btn btn-primary">See Who's Available When</a>
+            <a id="toggle" class="btn btn-primary">See Who's Available When</a>
             <div id="chat-window">
                 <% for (var i = 0; i < messages.length; i++) { %>
                     <% if (messages[i].user == id) { %>
