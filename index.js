@@ -239,8 +239,8 @@ function initMT(data) {
 }
 
 function changeTableValues(monthView, week1, week2, week3, week4, data) {
-    console.log(intent);
-    console.log(timePeriods[0]);
+    //console.log(intent);
+    //console.log(timePeriods[0]);
     if (intent == 'availability (time periods)') {
         var availDate = new Date(dates[0].stringValue); //go through all dates
         var availTimeStart = new Date(timePeriods[0].structValue.fields.startTime.stringValue).getHours();
@@ -305,9 +305,9 @@ function contains(users, handle) {
 
 function updateGroup(data) {
     Group.findOne({roomName: data.room}).then((currentTable) => {
-        console.log('found table');
+        //console.log('found table');
         if (!currentTable.users || !contains(currentTable.users, data.handle)) {
-            console.log('adding handle to users');
+            //console.log('adding handle to users');
             currentTable.users.push(data.handle);
         }
         changeTableValues(currentTable.monthView, currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4, data);
@@ -353,26 +353,26 @@ function getDatesTimes(bestTimes) {
 function getBestPeriods(datesTimes) {
     var result = [];
     var i = 0;
-    console.log(datesTimes);
+    //console.log(datesTimes);
     var endTimes = [];
     while (i < datesTimes.length) {
         var j = i;
         while (j + 1 < datesTimes.length && consecutive(datesTimes[j], datesTimes[j + 1])) {
             j++;
         }
-        console.log('start of period: ');
-        console.log(datesTimes[i].hour);
-        console.log(datesTimes[i].quarter);
-        console.log('end of period: ');
-        console.log(datesTimes[j].hour);
-        console.log(datesTimes[j].quarter);
+        //console.log('start of period: ');
+        //console.log(datesTimes[i].hour);
+        //console.log(datesTimes[i].quarter);
+        //console.log('end of period: ');
+        //console.log(datesTimes[j].hour);
+        //console.log(datesTimes[j].quarter);
         result.push({
             start: datesTimes[i],
             end: getNextInterval(datesTimes[j])
         });
         i = j + 1;
     }
-    console.log(result);
+    //console.log(result);
     return result;
 }
 
@@ -398,7 +398,7 @@ function getNextInterval(interval) {
 function consecutive(dt1, dt2) {
     if (dt1.date != dt2.date) return false;
     if (dt1.hour == dt2.hour && dt1.quarter + 1 == dt2.quarter) {
-        console.log('same hour, one quarter apart');
+        //console.log('same hour, one quarter apart');
         return true;
     } else if (dt1.hour + 1 == dt2.hour && dt1.quarter == 3 && dt2.quarter == 0) {
         return true;
@@ -407,7 +407,8 @@ function consecutive(dt1, dt2) {
 }
 
 function getDateFromIndices(weekNum, indexInWeek) {
-    var sunDate = getSunDate();
+    //var sunDate = getSunDate(); TODO change this back
+    var sunDate = new Date();
     var currDate = new Date();
     currDate.setDate(sunDate.getDate() + (weekNum * 7 + indexInWeek));
     return currDate;
@@ -416,11 +417,13 @@ function getDateFromIndices(weekNum, indexInWeek) {
 function getSunDate() {
     var today = new Date();
     var sunDate = new Date();
+    //console.log(sunDate);
+    //console.log('' + sunDate);
     var ctr = 0;
     while (sunDate.getDay() != 0) {
-        var sunDate = new Date();
         sunDate.setDate(today.getDate() - ctr);
         ctr += 1;
+        //console.log('' + sunDate);
     }
     return sunDate;
 }
@@ -493,13 +496,14 @@ function initWeek(weekArr) {
 function initTable(table) {
     var sunDate = getSunDate();
     for (var i = 0; i < 28; i++) {
-        var currDate = new Date();
+        var currDate = new Date('' + sunDate);
         currDate.setDate(sunDate.getDate() + i);
         table.push({
             date: currDate,
             available: []
         });
     }
+    console.log(table);
 }
 
 function equalDates(date1, date2) {
