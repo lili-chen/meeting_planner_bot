@@ -410,7 +410,7 @@ function getDateFromIndices(weekNum, indexInWeek) {
     //var sunDate = getSunDate(); TODO change this back
     var sunDate = new Date();
     var currDate = new Date();
-    currDate.setDate(sunDate.getDate() + (weekNum * 7 + indexInWeek));
+    currDate.setDate(sunDate.getDate() + (weekNum * 7 + indexInWeek) - 1);
     return currDate;
 }
 
@@ -503,7 +503,6 @@ function initTable(table) {
             available: []
         });
     }
-    console.log(table);
 }
 
 function equalDates(date1, date2) {
