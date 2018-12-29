@@ -18,21 +18,26 @@ function toggleSide() {
 
 // Query DOM
 var message = document.getElementById('message'),
-      handle = document.getElementById('handle'),
+      handle = document.getElementById('username'),
       btn = document.getElementById('send'),
       output = document.getElementById('output');
       feedback = document.getElementById('feedback');
       toggle = document.getElementById('toggle');
+      tips = document.getElementById('tips');
 
 // Emit events
 
 btn.addEventListener('click', function(){
   socket.emit('chat', {
       message: message.value,
-      handle: handle.value,
+      handle: handle.innerText,
       room: room
   });
   message.value = "";
+});
+
+tips.addEventListener('click', function(){
+  
 });
 
 toggle.addEventListener('click', function(){
@@ -47,13 +52,13 @@ message.addEventListener("keyup", function(event) {
  }); //https://www.w3schools.com/howto/howto_js_trigger_button_enter.asp
 
 message.addEventListener('keypress', function() {
-    socket.emit('typing', {handle: handle.value, room: room});
+    socket.emit('typing', {handle: handle.innerText, room: room});
 });
 
 // Listen for events
 socket.on('chat', function(data){
     feedback.innerHTML = '';
-    if (handle.value == data.handle) {
+    if (handle.innerText == data.handle) {
         output.innerHTML += '<div class="alert alert-primary" role="alert" style="float: right; width: 50rem; margin-top: 20px;"><p style="text-align: right;"><strong>' + data.handle + ': </strong>' + data.message + '</p></div>';
     } else {
         output.innerHTML += '<div class="alert alert-secondary" role="alert" style="float: left; width: 50rem; margin-top: 20px;"><p><strong>' + data.handle + ': </strong>' + data.message + '</p></div>';
@@ -193,7 +198,7 @@ socket.on('typing', function(data) {
 
 //var room = "inputFromUser"; //get this from user
 socket.on('connect', function() {
-    room = prompt("What room would you like to join?", "Some Default Room");
+    room = prompt("What room would you like to join?", "Default Room 1");
     console.log(room);
    // Connected, let's sign-up for to receive messages for this room
    socket.emit('room', room);

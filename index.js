@@ -46,6 +46,10 @@ app.get('/', (req, res) => {
     res.render('home');
 });
 
+app.get('/tips', (req, res) => {
+    res.render('tips');
+})
+
 function saveQueryResults(query, data, callback) {
     var sessionClient = botSetup.sessionClient;
     const request = {

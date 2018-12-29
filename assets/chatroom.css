@@ -21,7 +21,7 @@ h3 {
 }
 #chat-window {
     overflow: auto;
-    height: 500px;
+    height: 400px;
 }
 td {
     border: 1px solid black;

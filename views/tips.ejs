@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <base href="/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="icon" href="../../../../favicon.ico">
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+<script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
+    </head>
+    <body>
+        <div class="container">
+            <h1 style="padding-top: 100px;">Tips for Bot Interaction</h1>
+            <p>Use <strong>#bot</strong> followed by your message to alert the bot that you would like to add your availability!</p>
+            <p>You can use phrases like "I'm free from 1:30pm to 2:45pm tomorrow" to specify a time period. Specifying both the start and end time is the easiest way to ensure that the bot interprets your availability correctly.</p>
+            <p>For scheduling purposes, all start times are rounded down to the nearest fifteen minute mark (6:14 is rounded to 6:00), and all end times are rounded up (6:01 is rounded to 6:15)</p>
+            <p>The bot will understand variations of "I'm available" as well as different ways of specifying time and day (such as phrases like "next Sunday"). (Yay NLP!)<p>
+            <p>If you say you are available "before" a certain time, the bot assumes you are available from 12am to the time specified. It behaves similarly for "after" (assumes you are free from that time until 11:59pm).</p>
+            <p>If you're available "at" a specified time, the bot interprets that to mean one hour, starting from your specified time.</p>
+            <a class="btn btn-raised btn-primary" href="/chatroom">Back to Chat</a>
+    </body>
+</html>

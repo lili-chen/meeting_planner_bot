@@ -23,12 +23,12 @@
             </div>
         </div>
         <div class="col-lg-8">
-        <h4><%= username %></h4>
+        <h4 id="username"><%= username %></h4>
         <a id="logout" class="btn btn-outline-secondary" href="/auth/logout">Logout</a>
         <div id="group-chat">
             <h1>Chat</h1>
             <h5>Start your message with #bot to include the bot in your conversation!</h5>
-            <a class="btn btn-primary">Tips for Bot Interaction</a>
+            <a id="tips" class="btn btn-primary" href="/tips" style="color: black;">Tips for Bot Interaction</a>
             <a id="toggle" class="btn btn-primary">See Who's Available When</a>
             <div id="chat-window">
                 <% for (var i = 0; i < messages.length; i++) { %>
