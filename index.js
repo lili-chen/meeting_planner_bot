@@ -318,6 +318,8 @@ function updateGroup(data) {
         var bestTimes = getBestTimes(currentTable.week1, currentTable.week2, currentTable.week3, currentTable.week4);
         var datesTimes = getDatesTimes(bestTimes);
         var bestPeriods = getBestPeriods(datesTimes);
+        console.log(bestTimes);
+        console.log(datesTimes);
         io.sockets.in(data.room).emit('chat', {
             message: data.message,
             handle: data.handle,
@@ -411,10 +413,9 @@ function consecutive(dt1, dt2) {
 }
 
 function getDateFromIndices(weekNum, indexInWeek) {
-    //var sunDate = getSunDate(); TODO change this back
-    var sunDate = new Date();
+    var sunDate = getSunDate();
     var currDate = new Date();
-    currDate.setDate(sunDate.getDate() + (weekNum * 7 + indexInWeek) - 1);
+    currDate.setDate(sunDate.getDate() + (weekNum * 7 + indexInWeek));
     return currDate;
 }
 
